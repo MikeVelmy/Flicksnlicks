@@ -2,11 +2,11 @@ import Image from "next/image";
 import { siteInfo } from "@/data/site";
 
 const quickLinks = [
-  { href: "#about", label: "About" },
-  { href: "#menu", label: "Menu" },
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#location", label: "Location" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#about", label: "About" },
+  { href: "/#menu", label: "Menu" },
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/#location", label: "Location" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 const socialLinks = [
@@ -37,8 +37,8 @@ export default function Footer() {
               </span>
             </div>
             <p className="mt-4 max-w-sm font-body text-sm leading-relaxed text-cream-dim">
-              Flicks &amp; Licks — the Suya Boss — is a local food brand in
-              Haatso Atomic, Accra, serving fresh suya, loaded shawarma,
+              Flicks &amp; Licks — the Suya Boss — is a local food brand with
+              5 locations across Accra, serving fresh suya, loaded shawarma,
               wood-fired pizza and combo plates. Cash only, pickup and
               dine-in, easy ordering, big flavor.
             </p>
@@ -90,7 +90,7 @@ export default function Footer() {
         <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-body text-xs text-cream-dim/70">
             © {new Date().getFullYear()} Flicks &amp; Licks. All rights
-            reserved. Haatso Atomic, Accra, Ghana.
+            reserved. 5 locations across Accra, Ghana.
           </p>
           <p className="font-body text-xs text-cream-dim/70">
             Cash only · Local food brand in Ghana

@@ -1,19 +1,30 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { categories, products } from "@/data/site";
+import AddToOrderButton from "@/components/menu/AddToOrderButton";
+import { categories, products } from "@/data/menu";
 import type { CategoryId } from "@/types";
 
 type FilterId = CategoryId | "all";
 
 export default function Menu() {
   const [activeFilter, setActiveFilter] = useState<FilterId>("all");
+  const [query, setQuery] = useState("");
 
   const filteredProducts = useMemo(() => {
-    if (activeFilter === "all") return products;
-    return products.filter((p) => p.category === activeFilter);
-  }, [activeFilter]);
+    const q = query.trim().toLowerCase();
+    return products.filter((p) => {
+      const matchesCategory =
+        activeFilter === "all" || p.category === activeFilter;
+      const matchesQuery =
+        q.length === 0 ||
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q);
+      return matchesCategory && matchesQuery;
+    });
+  }, [activeFilter, query]);
 
   return (
     <section id="menu" className="bg-charcoal py-14 sm:py-20 scroll-mt-16">
@@ -26,11 +37,34 @@ export default function Menu() {
         </h2>
         <p className="mt-3 max-w-xl font-body text-cream-dim">
           From suya straight off the grill to loaded shawarma and combo
-          plates built for sharing — browse by category or see it all.
+          plates built for sharing — search, filter, and tap a dish for the
+          full details.
         </p>
 
+        <div className="mt-6 relative">
+          <svg
+            viewBox="0 0 24 24"
+            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-cream-dim/50"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path strokeLinecap="round" d="M21 21l-4.3-4.3" />
+          </svg>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search the menu…"
+            aria-label="Search the menu"
+            className="w-full rounded-full border-2 border-white/15 bg-ink py-3.5 pl-12 pr-4 text-base text-cream placeholder:text-cream-dim/50 focus:border-red focus:outline-none"
+          />
+        </div>
+
         <div
-          className="mt-7 -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0"
+          className="mt-5 -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0"
           role="group"
           aria-label="Filter menu by category"
         >
@@ -67,48 +101,57 @@ export default function Menu() {
           {filteredProducts.map((product) => (
             <article
               key={product.slug}
-              className="relative flex gap-4 overflow-hidden rounded-xl border border-white/10 bg-ink p-4"
+              className="group relative flex flex-col gap-3 overflow-hidden rounded-xl border border-white/10 bg-ink p-4 transition-colors hover:border-white/25"
             >
-              {product.image ? (
+              <Link
+                href={`/menu/${product.slug}`}
+                className="flex gap-4"
+              >
                 <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
                   <Image
-                    src={product.image}
+                    src={product.images[0]}
                     alt={product.name}
                     fill
                     sizes="80px"
-                    className="object-cover"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
                 </div>
-              ) : (
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-red-deep to-charcoal-light">
-                  <span className="font-display text-lg font-bold text-cream/90">
-                    {product.name.charAt(0)}
-                  </span>
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-display text-base font-bold leading-tight text-cream">
-                    {product.name}
-                  </h3>
-                  <span className="shrink-0 font-display text-base font-bold text-red-bright">
-                    ₵{product.price}
-                  </span>
-                </div>
-                {product.style && (
-                  <p className="mt-0.5 font-body text-xs font-semibold uppercase tracking-wide text-cream-dim/60">
-                    {product.style}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-display text-base font-bold leading-tight text-cream">
+                      {product.name}
+                    </h3>
+                    <span className="shrink-0 font-display text-base font-bold text-red-bright">
+                      ₵{product.price}
+                    </span>
+                  </div>
+                  {product.style && (
+                    <p className="mt-0.5 font-body text-xs font-semibold uppercase tracking-wide text-cream-dim/60">
+                      {product.style}
+                    </p>
+                  )}
+                  <p className="mt-1 line-clamp-2 font-body text-sm text-cream-dim">
+                    {product.description}
                   </p>
-                )}
-                <p className="mt-1 line-clamp-2 font-body text-sm text-cream-dim">
-                  {product.description}
-                </p>
-                {product.badge && (
-                  <span className="mt-2 inline-block rounded-md bg-red/15 px-2 py-0.5 font-body text-[0.7rem] font-semibold text-red-bright">
-                    {product.badge}
-                  </span>
-                )}
+                  {product.badge && (
+                    <span className="mt-2 inline-block rounded-md bg-red/15 px-2 py-0.5 font-body text-[0.7rem] font-semibold text-red-bright">
+                      {product.badge}
+                    </span>
+                  )}
+                </div>
+              </Link>
+
+              <div className="border-t border-white/10 pt-3">
+                <AddToOrderButton
+                  product={{
+                    slug: product.slug,
+                    name: product.name,
+                    price: product.price,
+                    image: product.images[0],
+                  }}
+                  size="sm"
+                />
               </div>
             </article>
           ))}
@@ -116,7 +159,8 @@ export default function Menu() {
 
         {filteredProducts.length === 0 && (
           <p className="mt-8 font-body text-cream-dim">
-            No items in this category yet — check back soon.
+            No dishes match &ldquo;{query}&rdquo; — try another search or
+            category.
           </p>
         )}
       </div>

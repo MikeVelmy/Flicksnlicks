@@ -1,13 +1,24 @@
 export type CategoryId =
-  | "protein"
-  | "sides"
-  | "wraps-pizza"
+  | "suya-grill"
+  | "rice"
+  | "loaded-favorites"
   | "combos";
 
 export interface Category {
   id: CategoryId;
   label: string;
   tagline: string;
+}
+
+export interface ExtrasOption {
+  name: string;
+  price: number;
+}
+
+export interface ExtrasGroup {
+  group: string;
+  optional: boolean;
+  options: ExtrasOption[];
 }
 
 export interface Product {
@@ -17,9 +28,26 @@ export interface Product {
   style?: string;
   description: string;
   price: number;
-  image?: string;
+  images: string[];
+  extras?: ExtrasGroup[];
   badge?: string;
-  isFeatured?: boolean;
+  isHotSale?: boolean;
+}
+
+export interface CartItem {
+  slug: string;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+}
+
+export interface Review {
+  id: string;
+  name: string;
+  rating: number;
+  comment: string;
+  date: string;
 }
 
 export interface Testimonial {
@@ -41,4 +69,11 @@ export interface OrderStep {
 export interface Hours {
   days: string;
   time: string;
+}
+
+export interface Branch {
+  name: string;
+  address: string;
+  mapsUrl: string;
+  isFlagship?: boolean;
 }

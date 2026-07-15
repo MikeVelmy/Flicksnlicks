@@ -3,19 +3,55 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useCart } from "@/context/CartContext";
 import { siteInfo } from "@/data/site";
 
 const navLinks = [
-  { href: "#about", label: "About" },
-  { href: "#menu", label: "Menu" },
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#location", label: "Location" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#menu", label: "Menu" },
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/#location", label: "Location" },
+  { href: "/#about", label: "About" },
+  { href: "/#faq", label: "FAQ" },
 ];
+
+function CartButton() {
+  const { totalItems, openCart } = useCart();
+  return (
+    <button
+      type="button"
+      onClick={openCart}
+      aria-label={`Open your order${totalItems > 0 ? `, ${totalItems} item${totalItems === 1 ? "" : "s"}` : ""}`}
+      className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-charcoal text-cream"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3 4h2l2.4 12.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 2-1.6L20 8H6"
+        />
+        <circle cx="9.5" cy="20" r="1.4" fill="currentColor" stroke="none" />
+        <circle cx="17" cy="20" r="1.4" fill="currentColor" stroke="none" />
+      </svg>
+      {totalItems > 0 && (
+        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red px-1 font-display text-[0.65rem] font-bold text-cream">
+          {totalItems}
+        </span>
+      )}
+    </button>
+  );
+}
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { openCart } = useCart();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8);
@@ -49,7 +85,7 @@ export default function Header() {
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <Link
-          href="#top"
+          href="/"
           className="flex items-center gap-2 shrink-0"
           onClick={() => setIsOpen(false)}
         >
@@ -80,41 +116,34 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="hidden md:block">
-          <a
-            href={`https://wa.me/${siteInfo.whatsappNumber}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-full bg-red px-5 py-2.5 font-display text-sm font-bold text-cream shadow-[0_4px_0_0_var(--color-red-deep)] transition-transform hover:-translate-y-0.5 active:translate-y-0 active:shadow-none"
-          >
-            Order Now
-          </a>
-        </div>
+        <div className="flex items-center gap-2.5">
+          <CartButton />
 
-        <button
-          type="button"
-          aria-expanded={isOpen}
-          aria-controls="mobile-menu"
-          aria-label={isOpen ? "Close menu" : "Open menu"}
-          onClick={() => setIsOpen((v) => !v)}
-          className="flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-1.5 rounded-full border border-white/15 bg-charcoal md:hidden"
-        >
-          <span
-            className={`block h-0.5 w-5 rounded-full bg-cream transition-transform ${
-              isOpen ? "translate-y-2 rotate-45" : ""
-            }`}
-          />
-          <span
-            className={`block h-0.5 w-5 rounded-full bg-cream transition-opacity ${
-              isOpen ? "opacity-0" : "opacity-100"
-            }`}
-          />
-          <span
-            className={`block h-0.5 w-5 rounded-full bg-cream transition-transform ${
-              isOpen ? "-translate-y-2 -rotate-45" : ""
-            }`}
-          />
-        </button>
+          <button
+            type="button"
+            aria-expanded={isOpen}
+            aria-controls="mobile-menu"
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            onClick={() => setIsOpen((v) => !v)}
+            className="flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-1.5 rounded-full border border-white/15 bg-charcoal md:hidden"
+          >
+            <span
+              className={`block h-0.5 w-5 rounded-full bg-cream transition-transform ${
+                isOpen ? "translate-y-2 rotate-45" : ""
+              }`}
+            />
+            <span
+              className={`block h-0.5 w-5 rounded-full bg-cream transition-opacity ${
+                isOpen ? "opacity-0" : "opacity-100"
+              }`}
+            />
+            <span
+              className={`block h-0.5 w-5 rounded-full bg-cream transition-transform ${
+                isOpen ? "-translate-y-2 -rotate-45" : ""
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       <div
@@ -135,15 +164,16 @@ export default function Header() {
               {link.label}
             </a>
           ))}
-          <a
-            href={`https://wa.me/${siteInfo.whatsappNumber}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => setIsOpen(false)}
+          <button
+            type="button"
+            onClick={() => {
+              setIsOpen(false);
+              openCart();
+            }}
             className="mt-2 inline-flex items-center justify-center rounded-full bg-red px-5 py-3.5 font-display text-base font-bold text-cream shadow-[0_4px_0_0_var(--color-red-deep)]"
           >
-            Order Now on WhatsApp
-          </a>
+            View Your Order
+          </button>
           <p className="mt-3 px-3 text-xs text-cream-dim/70">
             {siteInfo.location} · Cash only
           </p>

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Baloo_2, Work_Sans } from "next/font/google";
+import CartDrawer from "@/components/cart/CartDrawer";
+import { CartProvider } from "@/context/CartContext";
 import { siteInfo } from "@/data/site";
 import "./globals.css";
 
@@ -20,17 +22,21 @@ const siteUrl = "https://flicksandlicks.example.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Flicks & Licks | The Suya Boss — Haatso Atomic, Accra",
+    default: "Flicks & Licks | The Suya Boss — 5 Locations in Accra",
     template: "%s | Flicks & Licks",
   },
   description:
-    "Flicks & Licks is Haatso Atomic's favorite grill spot — the Suya Boss. Fresh suya, loaded shawarma, wood-fired pizza and combo plates. Cash only, fast pickup, big flavor.",
+    "Flicks & Licks is Accra's favorite grill spot — the Suya Boss. Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations: Haatso Atomic, Mile 7, Achimota, East Legon and Dansoman. Cash only, fast pickup, big flavor.",
   keywords: [
     "Flicks & Licks",
     "Haatso Atomic",
+    "Mile 7 T-Junction",
+    "Kingsby Achimota",
+    "East Legon suya",
+    "Dansoman restaurant",
     "Suya Boss",
     "suya Accra",
-    "shawarma Haatso",
+    "shawarma Accra",
     "local food brand Ghana",
     "cash only restaurant Accra",
     "Centrepoint Mall food",
@@ -41,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Flicks & Licks | The Suya Boss",
     description:
-      "Fresh suya, loaded shawarma, wood-fired pizza and combo plates in Haatso Atomic. Cash only, fast pickup, big flavor.",
+      "Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations across Accra. Cash only, fast pickup, big flavor.",
     url: siteUrl,
     siteName: "Flicks & Licks",
     images: [
@@ -59,7 +65,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Flicks & Licks | The Suya Boss",
     description:
-      "Fresh suya, loaded shawarma, wood-fired pizza and combo plates in Haatso Atomic. Cash only, fast pickup, big flavor.",
+      "Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations across Accra. Cash only, fast pickup, big flavor.",
     images: ["/images/og-image.jpg"],
   },
   icons: {
@@ -102,7 +108,10 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {children}
+        <CartProvider>
+          {children}
+          <CartDrawer />
+        </CartProvider>
       </body>
     </html>
   );
