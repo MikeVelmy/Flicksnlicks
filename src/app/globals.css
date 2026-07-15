@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+:root {
+  --color-ink: #0b0a09;
+  --color-charcoal: #17130f;
+  --color-charcoal-light: #221c17;
+  --color-red: #e3241f;
+  --color-red-deep: #a5150f;
+  --color-red-bright: #ff3a2f;
+  --color-cream: #f8f2e7;
+  --color-cream-dim: #e8ddc9;
+}
+
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-charcoal: var(--color-charcoal);
+  --color-charcoal-light: var(--color-charcoal-light);
+  --color-red: var(--color-red);
+  --color-red-deep: var(--color-red-deep);
+  --color-red-bright: var(--color-red-bright);
+  --color-cream: var(--color-cream);
+  --color-cream-dim: var(--color-cream-dim);
+  --font-display: var(--font-baloo);
+  --font-body: var(--font-worksans);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-cream);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+::selection {
+  background: var(--color-red);
+  color: var(--color-cream);
+}
+
+.marker-tag {
+  transform: rotate(-2deg);
+}
+
+.marker-tag:nth-child(even) {
+  transform: rotate(1.5deg);
+}
+
+@keyframes ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-track {
+  animation: ticker 26s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1.5px var(--color-cream);
+  color: transparent;
+}
