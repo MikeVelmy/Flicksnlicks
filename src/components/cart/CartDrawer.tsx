@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import QuantityStepper from "@/components/menu/QuantityStepper";
 import PaymentMethods, { type PaymentMethod } from "@/components/cart/PaymentMethods";
+import OrderDetails, { emptyOrderDetails, type OrderDetailsValue } from "@/components/cart/OrderDetails";
 import { loadPaystackScript } from "@/lib/loadPaystackScript";
 import { siteInfo } from "@/data/site";
 
@@ -18,14 +19,25 @@ interface PaidOrder {
   reference: string;
   amountGhs: number;
   orderLines: string;
-  deliveryLocation: string;
+  details: OrderDetailsValue;
 }
 
 interface PendingPayment {
   reference: string;
   orderLines: string;
-  deliveryLocation: string;
+  details: OrderDetailsValue;
   savedAt: number;
+}
+
+function formatDetailsLines(details: OrderDetailsValue) {
+  return [
+    details.name.trim() && `Receiver: ${details.name.trim()}`,
+    details.contact.trim() && `Contact: ${details.contact.trim()}`,
+    `Location: ${details.location.trim() || "___"}`,
+    details.notes.trim() && `Notes: ${details.notes.trim()}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export default function CartDrawer() {
@@ -39,7 +51,8 @@ export default function CartDrawer() {
     removeItem,
     clearCart,
   } = useCart();
-  const [deliveryLocation, setDeliveryLocation] = useState("");
+  const [details, setDetails] = useState<OrderDetailsValue>(emptyOrderDetails);
+  const [showDetails, setShowDetails] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("mobile-money");
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
   const [phone, setPhone] = useState("");
@@ -76,7 +89,9 @@ export default function CartDrawer() {
         if (stored) {
           const parsed: PendingPayment = JSON.parse(stored);
           if (Date.now() - parsed.savedAt < PENDING_PAYMENT_MAX_AGE_MS) {
-            setDeliveryLocation((prev) => prev || parsed.deliveryLocation);
+            setDetails((prev) =>
+              prev.name || prev.location ? prev : parsed.details
+            );
             verifyPayment(parsed);
           } else {
             localStorage.removeItem(PENDING_PAYMENT_KEY);
@@ -101,16 +116,12 @@ export default function CartDrawer() {
   }, [pendingPayment]);
 
   const orderLines = items.map((i) => `${i.quantity}x ${i.name}`).join("\n");
-  const whatsappMessage = `Hello Flicks & Licks, I'd like to order:\n${orderLines}\nTotal: GHS ${totalPrice}\nDelivery location: ${
-    deliveryLocation.trim() || "___"
-  }`;
+  const whatsappMessage = `Hello Flicks & Licks, I'd like to order:\n${orderLines}\nTotal: GHS ${totalPrice}\n${formatDetailsLines(details)}`;
   const whatsappHref = `https://wa.me/${siteInfo.whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   const paidWhatsappHref = paidOrder
     ? `https://wa.me/${siteInfo.whatsappNumber}?text=${encodeURIComponent(
-        `Hello Flicks & Licks, I just paid via Mobile Money.\nReference: ${paidOrder.reference}\nOrder:\n${paidOrder.orderLines}\nDelivery location: ${
-          paidOrder.deliveryLocation || "___"
-        }`
+        `Hello Flicks & Licks, I just paid via Mobile Money.\nReference: ${paidOrder.reference}\nOrder:\n${paidOrder.orderLines}\n${formatDetailsLines(paidOrder.details)}`
       )}`
     : "";
 
@@ -148,7 +159,7 @@ export default function CartDrawer() {
           reference: data.reference,
           amountGhs: data.amountGhs,
           orderLines: payment.orderLines,
-          deliveryLocation: payment.deliveryLocation,
+          details: payment.details,
         });
         setPaymentStatus("success");
         setPendingPayment(null);
@@ -203,11 +214,13 @@ export default function CartDrawer() {
       metadata: {
         phone,
         provider,
-        deliveryLocation: deliveryLocation.trim(),
+        details,
         orderLines,
         custom_fields: [
           { display_name: "Phone", variable_name: "phone", value: phone },
           { display_name: "Mobile Money Provider", variable_name: "provider", value: provider },
+          { display_name: "Receiver", variable_name: "receiver_name", value: details.name || "-" },
+          { display_name: "Location", variable_name: "location", value: details.location || "-" },
         ],
       },
       callback: (response) => {
@@ -215,7 +228,7 @@ export default function CartDrawer() {
         verifyPayment({
           reference: response.reference,
           orderLines,
-          deliveryLocation: deliveryLocation.trim(),
+          details,
         });
       },
       onClose: () => {
@@ -456,16 +469,37 @@ export default function CartDrawer() {
             {/* Checkout Section - Fixed Footer */}
             {items.length > 0 && (
               <div className="border-t border-white/10 px-5 pt-3 pb-4">
-                <div className="max-h-56 space-y-2.5 overflow-y-auto">
-                  <input
-                    id="delivery-location"
-                    type="text"
-                    value={deliveryLocation}
-                    onChange={(e) => setDeliveryLocation(e.target.value)}
-                    placeholder="Delivery / pickup location"
-                    aria-label="Delivery or pickup location"
-                    className="w-full rounded-lg border border-white/10 bg-charcoal/60 px-3 py-2.5 text-sm text-cream placeholder:text-cream-dim/50 focus:border-red focus:outline-none"
-                  />
+                <div className="max-h-72 space-y-2.5 overflow-y-auto">
+                  {/* Order Details Dropdown */}
+                  <button
+                    type="button"
+                    onClick={() => setShowDetails(!showDetails)}
+                    aria-expanded={showDetails}
+                    className="flex w-full items-center justify-between rounded-lg border border-white/10 bg-charcoal/60 px-3 py-2.5 transition-colors hover:border-white/20"
+                  >
+                    <div className="min-w-0 text-left text-sm">
+                      <span className="text-cream-dim">Details</span>{" "}
+                      <span className="font-display font-semibold text-cream">
+                        {[details.name.trim(), details.location.trim()]
+                          .filter(Boolean)
+                          .join(" · ") || "Add receiver & location"}
+                      </span>
+                    </div>
+                    <svg
+                      className={`h-4 w-4 shrink-0 text-cream-dim transition-transform ${
+                        showDetails ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {showDetails && <OrderDetails value={details} onChange={setDetails} />}
 
                   {/* Payment Methods Dropdown */}
                   <button
