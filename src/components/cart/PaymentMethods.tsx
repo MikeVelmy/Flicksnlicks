@@ -11,7 +11,7 @@ const methods = [
   {
     id: "mobile-money" as const,
     label: "Pay with Mobile Money",
-    description: "MTN, AirtelTigo, Telecel — pay online now",
+    description: "Send via MTN, AirtelTigo or Telecel",
     icon: "📱",
   },
   {

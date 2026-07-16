@@ -7,26 +7,24 @@ import { useCart } from "@/context/CartContext";
 import QuantityStepper from "@/components/menu/QuantityStepper";
 import PaymentMethods, { type PaymentMethod } from "@/components/cart/PaymentMethods";
 import OrderDetails, { emptyOrderDetails, type OrderDetailsValue } from "@/components/cart/OrderDetails";
-import { loadPaystackScript } from "@/lib/loadPaystackScript";
 import { siteInfo } from "@/data/site";
 
-type PaymentStatus = "idle" | "processing" | "success" | "unconfirmed";
+const MOMO_CHECKOUT_KEY = "fl-momo-checkout";
+const MOMO_CHECKOUT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24h
+const REFERENCE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous 0/O/1/I
 
-const PENDING_PAYMENT_KEY = "fl-pending-payment";
-const PENDING_PAYMENT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24h
-
-interface PaidOrder {
+interface MomoCheckoutState {
   reference: string;
-  amountGhs: number;
-  orderLines: string;
-  details: OrderDetailsValue;
+  submitted: boolean;
+  savedAt: number;
 }
 
-interface PendingPayment {
-  reference: string;
-  orderLines: string;
-  details: OrderDetailsValue;
-  savedAt: number;
+function generateReference() {
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += REFERENCE_CHARS[Math.floor(Math.random() * REFERENCE_CHARS.length)];
+  }
+  return `FL-${code}`;
 }
 
 function formatDetailsLines(details: OrderDetailsValue) {
@@ -55,14 +53,14 @@ export default function CartDrawer() {
   const [showDetails, setShowDetails] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("mobile-money");
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [provider, setProvider] = useState("mtn");
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle");
-  const [payError, setPayError] = useState<string | null>(null);
-  const [paidOrder, setPaidOrder] = useState<PaidOrder | null>(null);
-  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null);
-  const paymentResolvedRef = useRef(false);
-  const hydratedPendingPaymentRef = useRef(false);
+  const [momoReference, setMomoReference] = useState<string | null>(null);
+  const [transactionId, setTransactionId] = useState("");
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState<string | null>(null);
+  const [momoSubmitted, setMomoSubmitted] = useState(false);
+  const [proofError, setProofError] = useState<string | null>(null);
+  const [copied, setCopied] = useState<"number" | "reference" | null>(null);
+  const hydratedMomoRef = useRef(false);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -79,164 +77,108 @@ export default function CartDrawer() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [closeCart]);
 
-  // Rehydrate an unresolved Mobile Money payment across page reloads —
-  // never let a customer re-pay when we simply couldn't confirm a charge
-  // that may have already gone through.
+  // Build a tiny local preview for the attached screenshot and clean it up
+  // when it changes or unmounts, so we don't leak blob URLs.
   useEffect(() => {
-    queueMicrotask(() => {
-      try {
-        const stored = localStorage.getItem(PENDING_PAYMENT_KEY);
-        if (stored) {
-          const parsed: PendingPayment = JSON.parse(stored);
-          if (Date.now() - parsed.savedAt < PENDING_PAYMENT_MAX_AGE_MS) {
-            setDetails((prev) =>
-              prev.name || prev.location ? prev : parsed.details
-            );
-            verifyPayment(parsed);
-          } else {
-            localStorage.removeItem(PENDING_PAYMENT_KEY);
-          }
+    if (!screenshotFile) {
+      setScreenshotPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(screenshotFile);
+    setScreenshotPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [screenshotFile]);
+
+  // Rehydrate an in-progress Mobile Money checkout across reloads so the
+  // customer doesn't lose their reference number mid-payment.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(MOMO_CHECKOUT_KEY);
+      if (stored) {
+        const parsed: MomoCheckoutState = JSON.parse(stored);
+        if (Date.now() - parsed.savedAt < MOMO_CHECKOUT_MAX_AGE_MS) {
+          setMomoReference(parsed.reference);
+          setMomoSubmitted(parsed.submitted);
+        } else {
+          localStorage.removeItem(MOMO_CHECKOUT_KEY);
         }
-      } catch {
-        // ignore malformed local storage
-      } finally {
-        hydratedPendingPaymentRef.current = true;
       }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch {
+      // ignore malformed local storage
+    } finally {
+      hydratedMomoRef.current = true;
+    }
   }, []);
 
   useEffect(() => {
-    if (!hydratedPendingPaymentRef.current) return;
-    if (pendingPayment) {
-      localStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify(pendingPayment));
+    if (!hydratedMomoRef.current) return;
+    if (momoReference) {
+      localStorage.setItem(
+        MOMO_CHECKOUT_KEY,
+        JSON.stringify({ reference: momoReference, submitted: momoSubmitted, savedAt: Date.now() })
+      );
     } else {
-      localStorage.removeItem(PENDING_PAYMENT_KEY);
+      localStorage.removeItem(MOMO_CHECKOUT_KEY);
     }
-  }, [pendingPayment]);
+  }, [momoReference, momoSubmitted]);
+
+  // Generate a reference the moment Mobile Money becomes the selected method.
+  useEffect(() => {
+    if (paymentMethod === "mobile-money" && !momoReference && items.length > 0) {
+      setMomoReference(generateReference());
+    }
+  }, [paymentMethod, momoReference, items.length]);
+
+  // Clear a stale reference once the cart is emptied outside of a submission
+  // (e.g. "Clear order"), so the next checkout starts fresh.
+  useEffect(() => {
+    if (items.length === 0 && momoReference && !momoSubmitted) {
+      setMomoReference(null);
+    }
+  }, [items.length, momoReference, momoSubmitted]);
 
   const orderLines = items.map((i) => `${i.quantity}x ${i.name}`).join("\n");
   const whatsappMessage = `Hello Flicks & Licks, I'd like to order:\n${orderLines}\nTotal: GHS ${totalPrice}\n${formatDetailsLines(details)}`;
   const whatsappHref = `https://wa.me/${siteInfo.whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
-  const paidWhatsappHref = paidOrder
-    ? `https://wa.me/${siteInfo.whatsappNumber}?text=${encodeURIComponent(
-        `Hello Flicks & Licks, I just paid via Mobile Money.\nReference: ${paidOrder.reference}\nOrder:\n${paidOrder.orderLines}\n${formatDetailsLines(paidOrder.details)}`
-      )}`
-    : "";
-
-  const verifyPayment = async (payment: Omit<PendingPayment, "savedAt">) => {
-    setPendingPayment({ ...payment, savedAt: Date.now() });
-    setPaymentStatus("processing");
+  const handleCopy = async (text: string, field: "number" | "reference") => {
     try {
-      const res = await fetch(
-        `/api/paystack/verify?reference=${encodeURIComponent(payment.reference)}`
-      );
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (data.networkError) {
-          // We simply couldn't reach Paystack (network blip, timeout, etc).
-          // The charge may have already gone through — do NOT let the
-          // customer pay again. Offer retry-verification instead.
-          setPayError(
-            data.error ||
-              "We couldn't confirm your payment. If money left your account, don't pay again — tap Retry."
-          );
-          setPaymentStatus("unconfirmed");
-        } else {
-          // Paystack gave us a definitive answer (e.g. invalid/unknown
-          // reference) — safe to let the customer try a fresh payment.
-          setPayError(data.error || "Could not verify payment. Please try again.");
-          setPaymentStatus("idle");
-          setPendingPayment(null);
-        }
-        return;
-      }
-
-      if (data.status === "success") {
-        setPaidOrder({
-          reference: data.reference,
-          amountGhs: data.amountGhs,
-          orderLines: payment.orderLines,
-          details: payment.details,
-        });
-        setPaymentStatus("success");
-        setPendingPayment(null);
-        clearCart();
-      } else {
-        // Paystack gave us a definitive answer: the charge did not succeed.
-        setPayError("Payment was not successful. Please try again.");
-        setPaymentStatus("idle");
-        setPendingPayment(null);
-      }
-    } catch (error) {
-      setPayError(
-        error instanceof Error ? error.message : "Could not verify payment."
-      );
-      setPaymentStatus("unconfirmed");
+      await navigator.clipboard.writeText(text);
+      setCopied(field);
+      setTimeout(() => setCopied(null), 1500);
+    } catch {
+      // Clipboard API unavailable — the value is still visible to copy manually.
     }
   };
 
-  const handlePayWithMobileMoney = async () => {
-    if (!phone.trim()) {
-      setPayError("Enter the phone number to pay with.");
+  const handleNotifyRestaurant = () => {
+    if (!transactionId.trim() && !screenshotFile) {
+      setProofError("Enter your transaction ID or attach a screenshot.");
       return;
     }
-    const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-    if (!publicKey) {
-      setPayError("Online payment isn't set up yet. Please choose Cash on Pickup.");
-      return;
-    }
+    setProofError(null);
 
-    setPayError(null);
-    setPaymentStatus("processing");
-    paymentResolvedRef.current = false;
+    const proofLines = [
+      transactionId.trim() && `Transaction ID: ${transactionId.trim()}`,
+      screenshotFile && `Screenshot: ${screenshotFile.name} (I'll attach this here)`,
+    ]
+      .filter(Boolean)
+      .join("\n");
 
-    try {
-      await loadPaystackScript();
-    } catch (error) {
-      setPayError(
-        error instanceof Error ? error.message : "Could not load payment provider."
-      );
-      setPaymentStatus("idle");
-      return;
-    }
+    const message = `Hello Flicks & Licks, I've sent Mobile Money payment.\nReference: ${momoReference}\nAmount: GHS ${totalPrice}\n${proofLines}\n\nOrder:\n${orderLines}\n${formatDetailsLines(details)}`;
+    const href = `https://wa.me/${siteInfo.whatsappNumber}?text=${encodeURIComponent(message)}`;
+    window.open(href, "_blank", "noopener,noreferrer");
 
-    const email = `${phone.replace(/\D/g, "")}@guest.flicksandlicks.com`;
+    setMomoSubmitted(true);
+    clearCart();
+  };
 
-    window.PaystackPop!.setup({
-      key: publicKey,
-      email,
-      amount: Math.round(totalPrice * 100),
-      currency: "GHS",
-      channels: ["mobile_money"],
-      metadata: {
-        phone,
-        provider,
-        details,
-        orderLines,
-        custom_fields: [
-          { display_name: "Phone", variable_name: "phone", value: phone },
-          { display_name: "Mobile Money Provider", variable_name: "provider", value: provider },
-          { display_name: "Receiver", variable_name: "receiver_name", value: details.name || "-" },
-          { display_name: "Location", variable_name: "location", value: details.location || "-" },
-        ],
-      },
-      callback: (response) => {
-        paymentResolvedRef.current = true;
-        verifyPayment({
-          reference: response.reference,
-          orderLines,
-          details,
-        });
-      },
-      onClose: () => {
-        if (!paymentResolvedRef.current) {
-          setPaymentStatus("idle");
-        }
-      },
-    }).openIframe();
+  const handleDone = () => {
+    setMomoSubmitted(false);
+    setMomoReference(null);
+    setTransactionId("");
+    setScreenshotFile(null);
+    closeCart();
   };
 
   return (
@@ -286,80 +228,12 @@ export default function CartDrawer() {
           </button>
         </div>
 
-        {(paymentStatus === "unconfirmed" ||
-          (paymentStatus === "processing" && pendingPayment)) &&
-        pendingPayment ? (
-          /* Unconfirmed Screen — Paystack may have already charged the
-             customer; never let them pay again from here, only retry
-             confirming or fall back to WhatsApp with the reference. */
+        {momoSubmitted ? (
+          /* Pending Confirmation Screen */
           <div className="flex flex-1 flex-col items-center overflow-y-auto px-5 py-8 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/15">
-              {paymentStatus === "processing" ? (
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-amber-400/30 border-t-amber-400" />
-              ) : (
-                <svg
-                  className="h-7 w-7 text-amber-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 9v4m0 4h.01M12 3l9 16H3L12 3z"
-                  />
-                </svg>
-              )}
-            </div>
-            <h3 className="mt-4 font-display text-xl font-bold text-cream">
-              {paymentStatus === "processing"
-                ? "Confirming your payment…"
-                : "We couldn't confirm your payment"}
-            </h3>
-            <p className="mt-1 font-body text-sm text-cream-dim">
-              {paymentStatus === "processing"
-                ? "Hang tight, this only takes a moment."
-                : payError ||
-                  "If money left your account, don't pay again — tap Retry below."}
-            </p>
-
-            <div className="mt-5 w-full rounded-lg border border-white/10 bg-charcoal/60 p-3.5 text-left">
-              <p className="font-body text-xs text-cream-dim">Reference</p>
-              <p className="font-display text-sm font-semibold text-cream">
-                {pendingPayment.reference}
-              </p>
-            </div>
-
-            {paymentStatus === "unconfirmed" && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => verifyPayment(pendingPayment)}
-                  className="mt-5 flex w-full items-center justify-center rounded-full bg-amber-500 px-6 py-3.5 font-display text-base font-bold text-ink shadow-[0_5px_0_0_var(--color-amber-700,_#b45309)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
-                >
-                  Retry confirmation
-                </button>
-                <a
-                  href={`https://wa.me/${siteInfo.whatsappNumber}?text=${encodeURIComponent(
-                    `Hello Flicks & Licks, I paid via Mobile Money but the site couldn't confirm it.\nReference: ${pendingPayment.reference}\nOrder:\n${pendingPayment.orderLines}`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 flex w-full items-center justify-center rounded-full border border-white/15 px-6 py-3.5 font-display text-base font-bold text-cream transition-colors hover:border-white/30"
-                >
-                  Message us on WhatsApp instead
-                </a>
-              </>
-            )}
-          </div>
-        ) : paymentStatus === "success" && paidOrder ? (
-          /* Success Screen */
-          <div className="flex flex-1 flex-col items-center overflow-y-auto px-5 py-8 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500/15">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-purple-500/15">
               <svg
-                className="h-7 w-7 text-green-400"
+                className="h-7 w-7 text-purple-300"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.5"
@@ -370,39 +244,24 @@ export default function CartDrawer() {
               </svg>
             </div>
             <h3 className="mt-4 font-display text-xl font-bold text-cream">
-              Payment successful!
+              We&apos;ve got your payment details!
             </h3>
             <p className="mt-1 font-body text-sm text-cream-dim">
-              Your order is confirmed. We&apos;ve got it from here.
+              We&apos;re confirming your Mobile Money payment on WhatsApp — we&apos;ll start
+              preparing your order as soon as it&apos;s confirmed.
             </p>
 
             <div className="mt-5 w-full rounded-lg border border-white/10 bg-charcoal/60 p-3.5 text-left">
               <p className="font-body text-xs text-cream-dim">Reference</p>
-              <p className="font-display text-sm font-semibold text-cream">
-                {paidOrder.reference}
-              </p>
-              <p className="mt-2.5 font-body text-xs text-cream-dim">Amount paid</p>
-              <p className="font-display text-sm font-semibold text-red-bright">
-                ₵{paidOrder.amountGhs}
+              <p className="font-display text-lg font-bold tracking-wide text-purple-300">
+                {momoReference}
               </p>
             </div>
 
-            <a
-              href={paidWhatsappHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-5 flex w-full items-center justify-center rounded-full bg-red px-6 py-3.5 font-display text-base font-bold text-cream shadow-[0_5px_0_0_var(--color-red-deep)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
-            >
-              Send confirmation on WhatsApp
-            </a>
             <button
               type="button"
-              onClick={() => {
-                setPaymentStatus("idle");
-                setPaidOrder(null);
-                closeCart();
-              }}
-              className="mt-4 font-body text-sm text-cream-dim hover:text-red-bright"
+              onClick={handleDone}
+              className="mt-5 flex w-full items-center justify-center rounded-full bg-red px-6 py-3.5 font-display text-base font-bold text-cream shadow-[0_5px_0_0_var(--color-red-deep)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
             >
               Done
             </button>
@@ -469,7 +328,7 @@ export default function CartDrawer() {
             {/* Checkout Section - Fixed Footer */}
             {items.length > 0 && (
               <div className="border-t border-white/10 px-5 pt-3 pb-4">
-                <div className="max-h-72 space-y-2.5 overflow-y-auto">
+                <div className="max-h-80 space-y-2.5 overflow-y-auto">
                   {/* Order Details Dropdown */}
                   <button
                     type="button"
@@ -515,7 +374,7 @@ export default function CartDrawer() {
                       </span>
                       {paymentMethod === "mobile-money" && (
                         <span className="rounded-full bg-purple-500/15 px-2 py-0.5 font-body text-[10px] font-semibold uppercase tracking-wide text-purple-300">
-                          Pay online
+                          Send MoMo
                         </span>
                       )}
                     </div>
@@ -543,36 +402,107 @@ export default function CartDrawer() {
                       onSelect={(method) => {
                         setPaymentMethod(method);
                         setShowPaymentMethods(false);
-                        setPayError(null);
+                        setProofError(null);
                       }}
                     />
                   )}
 
-                  {paymentMethod === "mobile-money" && (
-                    <div className="flex gap-2">
+                  {paymentMethod === "mobile-money" && momoReference && (
+                    <>
+                      {/* Payment instructions */}
+                      <div className="space-y-3 rounded-lg border border-purple-500/20 bg-purple-500/5 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-body text-xs text-cream-dim">Send Mobile Money to</p>
+                            <p className="font-display text-base font-bold text-cream">
+                              {siteInfo.phonePrimary}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(siteInfo.phonePrimary, "number")}
+                            className="shrink-0 rounded-full border border-white/15 px-2.5 py-1 font-body text-[11px] font-semibold text-cream-dim transition-colors hover:border-white/30"
+                          >
+                            {copied === "number" ? "Copied" : "Copy"}
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-3">
+                          <div className="min-w-0">
+                            <p className="font-body text-xs text-cream-dim">Amount</p>
+                            <p className="font-display text-base font-bold text-red-bright">
+                              ₵{totalPrice}
+                            </p>
+                          </div>
+                          <div className="min-w-0 text-right">
+                            <p className="font-body text-xs text-cream-dim">Your reference</p>
+                            <p className="font-display text-base font-bold tracking-wide text-purple-300">
+                              {momoReference}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(momoReference, "reference")}
+                            className="shrink-0 rounded-full border border-white/15 px-2.5 py-1 font-body text-[11px] font-semibold text-cream-dim transition-colors hover:border-white/30"
+                          >
+                            {copied === "reference" ? "Copied" : "Copy"}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Proof of payment */}
                       <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="Mobile Money number"
-                        aria-label="Mobile Money phone number"
-                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-charcoal/60 px-3 py-2.5 text-sm text-cream placeholder:text-cream-dim/50 focus:border-red focus:outline-none"
+                        type="text"
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value)}
+                        placeholder="Transaction ID (from MoMo SMS)"
+                        aria-label="Mobile Money transaction ID"
+                        className="w-full rounded-lg border border-white/10 bg-charcoal/60 px-3 py-2.5 text-sm text-cream placeholder:text-cream-dim/50 focus:border-red focus:outline-none"
                       />
-                      <select
-                        value={provider}
-                        onChange={(e) => setProvider(e.target.value)}
-                        aria-label="Mobile Money provider"
-                        className="rounded-lg border border-white/10 bg-charcoal/60 px-2.5 py-2.5 text-sm text-cream focus:border-red focus:outline-none"
-                      >
-                        <option value="mtn">MTN</option>
-                        <option value="airteltigo">AirtelTigo</option>
-                        <option value="telecel">Telecel</option>
-                      </select>
-                    </div>
+                      {screenshotFile && screenshotPreviewUrl ? (
+                        <div className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-charcoal/60 px-2.5 py-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={screenshotPreviewUrl}
+                            alt="Payment screenshot preview"
+                            className="h-10 w-10 shrink-0 rounded-md object-cover"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-body text-sm text-cream">
+                              {screenshotFile.name}
+                            </p>
+                            <p className="font-body text-xs text-cream-dim">
+                              Screenshot attached
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setScreenshotFile(null)}
+                            aria-label="Remove screenshot"
+                            className="shrink-0 font-body text-lg leading-none text-cream-dim/50 hover:text-red-bright"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-white/10 bg-charcoal/60 px-3 py-2.5 text-sm text-cream-dim transition-colors hover:border-white/20">
+                          <span>Or attach a screenshot</span>
+                          <span className="shrink-0 font-display text-xs font-bold text-red-bright">
+                            Browse
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => setScreenshotFile(e.target.files?.[0] ?? null)}
+                          />
+                        </label>
+                      )}
+                    </>
                   )}
 
-                  {payError && (
-                    <p className="font-body text-xs text-red-bright">{payError}</p>
+                  {proofError && (
+                    <p className="font-body text-xs text-red-bright">{proofError}</p>
                   )}
                 </div>
 
@@ -586,11 +516,10 @@ export default function CartDrawer() {
                 {paymentMethod === "mobile-money" ? (
                   <button
                     type="button"
-                    onClick={handlePayWithMobileMoney}
-                    disabled={paymentStatus === "processing"}
-                    className="mt-3 flex w-full items-center justify-center rounded-full bg-purple-600 px-6 py-3.5 font-display text-base font-bold text-cream shadow-[0_5px_0_0_var(--color-purple-700)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-60 disabled:hover:translate-y-0"
+                    onClick={handleNotifyRestaurant}
+                    className="mt-3 flex w-full items-center justify-center rounded-full bg-purple-600 px-6 py-3.5 font-display text-base font-bold text-cream shadow-[0_5px_0_0_var(--color-purple-700)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
                   >
-                    {paymentStatus === "processing" ? "Processing…" : "Pay with Mobile Money"}
+                    Payment Made — Notify Restaurant
                   </button>
                 ) : (
                   <a
