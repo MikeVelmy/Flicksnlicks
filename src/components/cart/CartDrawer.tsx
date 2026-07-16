@@ -415,12 +415,15 @@ export default function CartDrawer() {
                           <div className="min-w-0">
                             <p className="font-body text-xs text-cream-dim">Send Mobile Money to</p>
                             <p className="font-display text-base font-bold text-cream">
-                              {siteInfo.phonePrimary}
+                              {siteInfo.momoNumber}
+                            </p>
+                            <p className="font-body text-xs text-cream-dim">
+                              {siteInfo.momoAccountName}
                             </p>
                           </div>
                           <button
                             type="button"
-                            onClick={() => handleCopy(siteInfo.phonePrimary, "number")}
+                            onClick={() => handleCopy(siteInfo.momoNumber, "number")}
                             className="shrink-0 rounded-full border border-white/15 px-2.5 py-1 font-body text-[11px] font-semibold text-cream-dim transition-colors hover:border-white/30"
                           >
                             {copied === "number" ? "Copied" : "Copy"}

@@ -9,6 +9,8 @@ export const siteInfo = {
   phonePrimary: "0560464336",
   phoneSecondary: "0560464336",
   whatsappNumber: "233560464336",
+  momoNumber: "0560709608",
+  momoAccountName: "Christiana Awo Whyte",
   instagram: "https://instagram.com/flicks_n_licks",
   tiktok: "https://tiktok.com/@flicks_n_licks",
   facebook: "https://facebook.com/flicks_n_licks",
