@@ -151,7 +151,7 @@ export default function CartDrawer() {
     }
   };
 
-  const handleNotifyRestaurant = () => {
+  const handleNotifyRestaurant = async () => {
     if (!transactionId.trim() && !screenshotFile) {
       setProofError("Enter your transaction ID or attach a screenshot.");
       return;
@@ -160,14 +160,32 @@ export default function CartDrawer() {
 
     const proofLines = [
       transactionId.trim() && `Transaction ID: ${transactionId.trim()}`,
-      screenshotFile && `Screenshot: ${screenshotFile.name} (I'll attach this here)`,
     ]
       .filter(Boolean)
       .join("\n");
 
     const message = `Hello Flicks & Licks, I've sent Mobile Money payment.\nReference: ${momoReference}\nAmount: GHS ${totalPrice}\n${proofLines}\n\nOrder:\n${orderLines}\n${formatDetailsLines(details)}`;
-    const href = `https://wa.me/${siteInfo.whatsappNumber}?text=${encodeURIComponent(message)}`;
-    window.open(href, "_blank", "noopener,noreferrer");
+
+    // wa.me links can only pre-fill text, not attachments, so a screenshot
+    // has to go through the device share sheet to actually reach WhatsApp
+    // as an image (user picks WhatsApp from the sheet themselves).
+    if (screenshotFile && navigator.canShare?.({ files: [screenshotFile] })) {
+      try {
+        await navigator.share({ files: [screenshotFile], text: message });
+      } catch {
+        // User backed out of the share sheet — let them retry instead of
+        // silently clearing their cart and proof.
+        return;
+      }
+    } else {
+      const proofNote = screenshotFile
+        ? `\nScreenshot: ${screenshotFile.name} (please attach it in this chat)`
+        : "";
+      const href = `https://wa.me/${siteInfo.whatsappNumber}?text=${encodeURIComponent(
+        message + proofNote
+      )}`;
+      window.open(href, "_blank", "noopener,noreferrer");
+    }
 
     setMomoSubmitted(true);
     clearCart();
@@ -231,9 +249,9 @@ export default function CartDrawer() {
         {momoSubmitted ? (
           /* Pending Confirmation Screen */
           <div className="flex flex-1 flex-col items-center overflow-y-auto px-5 py-8 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-purple-500/15">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500/15">
               <svg
-                className="h-7 w-7 text-purple-300"
+                className="h-7 w-7 text-green-300"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.5"
@@ -253,7 +271,7 @@ export default function CartDrawer() {
 
             <div className="mt-5 w-full rounded-lg border border-white/10 bg-charcoal/60 p-3.5 text-left">
               <p className="font-body text-xs text-cream-dim">Reference</p>
-              <p className="font-display text-lg font-bold tracking-wide text-purple-300">
+              <p className="font-display text-lg font-bold tracking-wide text-green-300">
                 {momoReference}
               </p>
             </div>
@@ -373,7 +391,7 @@ export default function CartDrawer() {
                         {paymentMethod === "cash" ? "Cash on Pickup" : "Mobile Money"}
                       </span>
                       {paymentMethod === "mobile-money" && (
-                        <span className="rounded-full bg-purple-500/15 px-2 py-0.5 font-body text-[10px] font-semibold uppercase tracking-wide text-purple-300">
+                        <span className="rounded-full bg-green-500/15 px-2 py-0.5 font-body text-[10px] font-semibold uppercase tracking-wide text-green-300">
                           Send MoMo
                         </span>
                       )}
@@ -410,7 +428,7 @@ export default function CartDrawer() {
                   {paymentMethod === "mobile-money" && momoReference && (
                     <>
                       {/* Payment instructions */}
-                      <div className="space-y-3 rounded-lg border border-purple-500/20 bg-purple-500/5 p-3">
+                      <div className="space-y-3 rounded-lg border border-green-500/20 bg-green-500/5 p-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0">
                             <p className="font-body text-xs text-cream-dim">Send Mobile Money to</p>
@@ -439,7 +457,7 @@ export default function CartDrawer() {
                           </div>
                           <div className="min-w-0 text-right">
                             <p className="font-body text-xs text-cream-dim">Your reference</p>
-                            <p className="font-display text-base font-bold tracking-wide text-purple-300">
+                            <p className="font-display text-base font-bold tracking-wide text-green-300">
                               {momoReference}
                             </p>
                           </div>
@@ -520,7 +538,7 @@ export default function CartDrawer() {
                   <button
                     type="button"
                     onClick={handleNotifyRestaurant}
-                    className="mt-3 flex w-full items-center justify-center rounded-full bg-purple-600 px-6 py-3.5 font-display text-base font-bold text-cream shadow-[0_5px_0_0_var(--color-purple-700)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
+                    className="mt-3 flex w-full items-center justify-center rounded-full bg-green-600 px-6 py-3.5 font-display text-base font-bold text-cream shadow-[0_5px_0_0_var(--color-green-700)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
                   >
                     Payment Made, Notify Restaurant
                   </button>
