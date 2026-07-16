@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Baloo_2, Work_Sans } from "next/font/google";
 import CartDrawer from "@/components/cart/CartDrawer";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import { CartProvider } from "@/context/CartContext";
 import { siteInfo } from "@/data/site";
 import "./globals.css";
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | Flicks & Licks",
   },
   description:
-    "Flicks & Licks is Accra's favorite grill spot — the Suya Boss. Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations: Haatso Atomic, Mile 7, Achimota, East Legon and Dansoman. Cash only, fast pickup, big flavor.",
+    "Flicks & Licks is Accra's favorite grill spot — the Suya Boss. Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations: Haatso Atomic, Mile 7, Achimota, East Legon and Dansoman. Fast pickup, flexible payment, big flavor.",
   keywords: [
     "Flicks & Licks",
     "Haatso Atomic",
@@ -38,7 +39,6 @@ export const metadata: Metadata = {
     "suya Accra",
     "shawarma Accra",
     "local food brand Ghana",
-    "cash only restaurant Accra",
     "Centrepoint Mall food",
   ],
   alternates: {
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Flicks & Licks | The Suya Boss",
     description:
-      "Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations across Accra. Cash only, fast pickup, big flavor.",
+      "Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations across Accra. Fast pickup, flexible payment, big flavor.",
     url: siteUrl,
     siteName: "Flicks & Licks",
     images: [
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Flicks & Licks | The Suya Boss",
     description:
-      "Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations across Accra. Cash only, fast pickup, big flavor.",
+      "Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations across Accra. Fast pickup, flexible payment, big flavor.",
     images: ["/images/og-image.jpg"],
   },
   icons: {
@@ -89,7 +89,7 @@ const jsonLd = {
     addressCountry: "GH",
   },
   telephone: siteInfo.phonePrimary,
-  paymentAccepted: "Cash",
+  paymentAccepted: "Cash, Mobile Money",
   sameAs: [siteInfo.instagram, siteInfo.tiktok, siteInfo.facebook, siteInfo.twitter],
 };
 
@@ -111,6 +111,7 @@ export default function RootLayout({
         <CartProvider>
           {children}
           <CartDrawer />
+          <FloatingWhatsApp />
         </CartProvider>
       </body>
     </html>

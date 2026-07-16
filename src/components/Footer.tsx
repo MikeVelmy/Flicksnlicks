@@ -39,7 +39,7 @@ export default function Footer() {
             <p className="mt-4 max-w-sm font-body text-sm leading-relaxed text-cream-dim">
               Flicks &amp; Licks — the Suya Boss — is a local food brand with
               5 locations across Accra, serving fresh suya, loaded shawarma,
-              wood-fired pizza and combo plates. Cash only, pickup and
+              wood-fired pizza and combo plates. Cash &amp; Mobile Money accepted, pickup and
               dine-in, easy ordering, big flavor.
             </p>
           </div>
@@ -69,7 +69,6 @@ export default function Footer() {
             <ul className="mt-4 space-y-2.5 font-body text-sm text-cream-dim">
               <li>{siteInfo.location}</li>
               <li>{siteInfo.phonePrimary}</li>
-              <li>{siteInfo.phoneSecondary}</li>
             </ul>
             <div className="mt-5 flex flex-wrap gap-3">
               {socialLinks.map((social) => (
@@ -93,7 +92,7 @@ export default function Footer() {
             reserved. 5 locations across Accra, Ghana.
           </p>
           <p className="font-body text-xs text-cream-dim/70">
-            Cash only · Local food brand in Ghana
+            Cash &amp; Mobile Money · Local food brand in Ghana
           </p>
         </div>
       </div>

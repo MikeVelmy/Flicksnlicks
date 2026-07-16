@@ -6,9 +6,9 @@ export const siteInfo = {
   tagline: "The Suya Boss",
   location: "Haatso Atomic, near Centrepoint Mall",
   city: "Accra, Ghana",
-  phonePrimary: "0302 208 054",
-  phoneSecondary: "0242 438 720",
-  whatsappNumber: "233242438720",
+  phonePrimary: "0560464336",
+  phoneSecondary: "0560464336",
+  whatsappNumber: "233560464336",
   instagram: "https://instagram.com/flicks_n_licks",
   tiktok: "https://tiktok.com/@flicks_n_licks",
   facebook: "https://facebook.com/flicks_n_licks",
@@ -63,8 +63,8 @@ export const orderSteps: OrderStep[] = [
     description: "Walk in to your nearest Flicks & Licks branch and place your order.",
   },
   {
-    title: "Pay cash on pickup",
-    description: "Cash only, no card, no fuss. Pay when your order's ready.",
+    title: "Pay your way",
+    description: "Cash or Mobile Money — pick your payment method. Pay when your order's ready.",
   },
   {
     title: "Dig in",
@@ -95,9 +95,9 @@ export const testimonials: Testimonial[] = [
 
 export const faqItems: FaqItem[] = [
   {
-    question: "Is Flicks & Licks cash only?",
+    question: "What payment methods do you accept?",
     answer:
-      "Yes. We currently accept cash only at the counter — no card payments. We're working on more options soon.",
+      "We accept cash and Mobile Money. Fast, flexible, easy.",
   },
   {
     question: "Where is Flicks & Licks located?",

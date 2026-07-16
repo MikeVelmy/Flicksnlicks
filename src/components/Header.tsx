@@ -175,7 +175,7 @@ export default function Header() {
             View Your Order
           </button>
           <p className="mt-3 px-3 text-xs text-cream-dim/70">
-            {siteInfo.location} · Cash only
+            {siteInfo.location} · Cash &amp; Mobile Money
           </p>
         </nav>
       </div>

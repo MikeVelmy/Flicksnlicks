@@ -26,7 +26,7 @@ export async function generateMetadata({
 
   return {
     title: product.name,
-    description: `${product.description} ₵${product.price} at Flicks & Licks — order cash on pickup at any of our Accra locations.`,
+    description: `${product.description} ₵${product.price} at Flicks & Licks — order for pickup at any of our Accra locations.`,
     openGraph: {
       title: `${product.name} | Flicks & Licks`,
       description: product.description,
@@ -153,7 +153,7 @@ export default async function DishPage({
                 />
               </div>
               <p className="mt-3 font-body text-xs text-cream-dim/60">
-                Cash only at the counter · Pickup &amp; dine-in
+                Cash &amp; Mobile Money accepted · Pickup &amp; dine-in
               </p>
             </div>
           </div>

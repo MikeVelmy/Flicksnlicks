@@ -78,7 +78,7 @@ export default function LocationHours() {
                 Contact
               </h3>
               <p className="mt-2 font-body text-cream-dim">
-                {siteInfo.phonePrimary} · {siteInfo.phoneSecondary}
+                {siteInfo.phonePrimary}
                 <br />
                 {siteInfo.handle} on social
               </p>

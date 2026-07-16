@@ -2,7 +2,7 @@ import Image from "next/image";
 import { siteInfo } from "@/data/site";
 
 const trustTags = [
-  "Cash only",
+  "Cash & Mobile Money",
   "Fresh off the grill",
   "Fast pickup",
   "5 locations in Accra",
@@ -33,7 +33,7 @@ export default function Hero() {
 
           <p className="mt-5 max-w-md font-body text-base leading-relaxed text-cream-dim sm:text-lg">
             Fresh suya, loaded shawarma and combo plates grilled hot and
-            served fast. Fresh picks, made to satisfy — cash only, easy
+            served fast. Fresh picks, made to satisfy — easy payment, easy
             cravings.
           </p>
 
