@@ -37,7 +37,7 @@ export default function Menu() {
         </h2>
         <p className="mt-3 max-w-xl font-body text-cream-dim">
           From suya straight off the grill to loaded shawarma and combo
-          plates built for sharing — search, filter, and tap a dish for the
+          plates built for sharing, search, filter, and tap a dish for the
           full details.
         </p>
 
@@ -159,7 +159,7 @@ export default function Menu() {
 
         {filteredProducts.length === 0 && (
           <p className="mt-8 font-body text-cream-dim">
-            No dishes match &ldquo;{query}&rdquo; — try another search or
+            No dishes match &ldquo;{query}&rdquo;, try another search or
             category.
           </p>
         )}

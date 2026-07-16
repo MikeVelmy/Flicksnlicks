@@ -33,7 +33,7 @@ export default function Hero() {
 
           <p className="mt-5 max-w-md font-body text-base leading-relaxed text-cream-dim sm:text-lg">
             Fresh suya, loaded shawarma and combo plates grilled hot and
-            served fast. Fresh picks, made to satisfy — easy payment, easy
+            served fast. Fresh picks, made to satisfy, easy payment, easy
             cravings.
           </p>
 
@@ -79,7 +79,7 @@ export default function Hero() {
             />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 to-transparent p-4 pt-10">
               <p className="font-display text-sm font-bold text-cream sm:text-base">
-                Our flagship in Haatso Atomic — 5 locations across Accra
+                Our flagship in Haatso Atomic, 5 locations across Accra
               </p>
             </div>
           </div>

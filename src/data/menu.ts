@@ -30,7 +30,7 @@ export const products: Product[] = [
     category: "suya-grill",
     style: "Nigerian style",
     description:
-      "Char-grilled chicken suya, spiced and smoky, sliced fresh off the coals and served with onion, cucumber and pepper.",
+      "Char grilled chicken suya, spiced and smoky, sliced fresh off the coals and served with onion, cucumber and pepper.",
     price: 60,
     images: [
       "/images/menu/chicken-suya/1.webp",
@@ -43,7 +43,7 @@ export const products: Product[] = [
     category: "rice",
     style: "Chinese style",
     description:
-      "Vegetable fried rice, wok-tossed with carrot, spring onion and egg, served with pepper sauce on the side.",
+      "Vegetable fried rice, wok tossed with carrot, spring onion and egg, served with pepper sauce on the side.",
     price: 40,
     images: [
       "/images/menu/fried-rice/1.webp",
@@ -68,7 +68,7 @@ export const products: Product[] = [
     name: "Assorted Jollof",
     category: "rice",
     description:
-      "Jollof rice stir-fried with spicy chicken suya and sausage, served with coleslaw and wings on the side.",
+      "Jollof rice stir fried with spicy chicken suya and sausage, served with coleslaw and wings on the side.",
     price: 120,
     images: ["/images/menu/assorted-jollof/1.webp"],
   },
@@ -77,7 +77,7 @@ export const products: Product[] = [
     name: "Flicks & Licks Combo",
     category: "combos",
     description:
-      "Chicken suya, beef suya, spicy chicken wings, spring rolls, french fries, pizza slices, fried rice and jollof rice — built for sharing.",
+      "Chicken suya, beef suya, spicy chicken wings, spring rolls, french fries, pizza slices, fried rice and jollof rice, built for sharing.",
     price: 290,
     images: [
       "/images/menu/flicks-licks-combo/1.webp",
@@ -86,7 +86,7 @@ export const products: Product[] = [
     ],
     extras: [
       {
-        group: "À La Carte Add-ons",
+        group: "À La Carte Extras",
         optional: true,
         options: [
           { name: "Chicken Suya Only", price: 60 },
@@ -117,7 +117,7 @@ export const products: Product[] = [
     name: "Fully Loaded Shawarma",
     category: "loaded-favorites",
     description:
-      "Hand-rolled shawarma stuffed with meat, veg and sauce — wrapped fresh and packed with flavor.",
+      "Hand rolled shawarma stuffed with meat, veg and sauce, wrapped fresh and packed with flavor.",
     price: 95,
     images: ["/images/menu/fully-loaded-shawarma/1.webp"],
     badge: "Hot Sale",
@@ -137,7 +137,7 @@ export const products: Product[] = [
     name: "The Squad Combo",
     category: "combos",
     description:
-      "Flicks Special Pizza + 1 Liter Coke for the whole squad. Limited-time deal, 11th June – 19th July.",
+      "Flicks Special Pizza + 1 Liter Coke for the whole squad. Limited time deal, 11th June to 19th July.",
     price: 149,
     images: ["/images/menu/the-squad-combo/1.webp"],
     badge: "Hot Sale",
@@ -223,7 +223,7 @@ export const seedReviews: Record<string, Review[]> = {
       id: "seed-2",
       name: "Efua D.",
       rating: 5,
-      comment: "My go-to order every single time. Never disappoints.",
+      comment: "My favorite order every single time. Never disappoints.",
       date: "2026-05-14",
     },
   ],

@@ -23,15 +23,15 @@ const siteUrl = "https://flicksandlicks.example.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Flicks & Licks | The Suya Boss — 5 Locations in Accra",
+    default: "Flicks & Licks | The Suya Boss, 5 Locations in Accra",
     template: "%s | Flicks & Licks",
   },
   description:
-    "Flicks & Licks is Accra's favorite grill spot — the Suya Boss. Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations: Haatso Atomic, Mile 7, Achimota, East Legon and Dansoman. Fast pickup, flexible payment, big flavor.",
+    "Flicks & Licks is Accra's favorite grill spot, the Suya Boss. Fresh suya, loaded shawarma, wood fired pizza and combo plates at 5 locations: Haatso Atomic, Mile 7, Achimota, East Legon and Dansoman. Fast pickup, flexible payment, big flavor.",
   keywords: [
     "Flicks & Licks",
     "Haatso Atomic",
-    "Mile 7 T-Junction",
+    "Mile 7 T Junction",
     "Kingsby Achimota",
     "East Legon suya",
     "Dansoman restaurant",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Flicks & Licks | The Suya Boss",
     description:
-      "Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations across Accra. Fast pickup, flexible payment, big flavor.",
+      "Fresh suya, loaded shawarma, wood fired pizza and combo plates at 5 locations across Accra. Fast pickup, flexible payment, big flavor.",
     url: siteUrl,
     siteName: "Flicks & Licks",
     images: [
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
         url: "/images/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Flicks & Licks — The Suya Boss",
+        alt: "Flicks & Licks, The Suya Boss",
       },
     ],
     locale: "en_GH",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Flicks & Licks | The Suya Boss",
     description:
-      "Fresh suya, loaded shawarma, wood-fired pizza and combo plates at 5 locations across Accra. Fast pickup, flexible payment, big flavor.",
+      "Fresh suya, loaded shawarma, wood fired pizza and combo plates at 5 locations across Accra. Fast pickup, flexible payment, big flavor.",
     images: ["/images/og-image.jpg"],
   },
   icons: {

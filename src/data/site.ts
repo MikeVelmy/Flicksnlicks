@@ -19,9 +19,9 @@ export const siteInfo = {
 };
 
 export const hours: Hours[] = [
-  { days: "Monday – Thursday", time: "11:00 AM – 11:00 PM" },
-  { days: "Friday – Saturday", time: "11:00 AM – 1:00 AM" },
-  { days: "Sunday", time: "1:00 PM – 11:00 PM" },
+  { days: "Monday to Thursday", time: "11:00 AM to 11:00 PM" },
+  { days: "Friday to Saturday", time: "11:00 AM to 1:00 AM" },
+  { days: "Sunday", time: "1:00 PM to 11:00 PM" },
 ];
 
 export const branches: Branch[] = [
@@ -34,8 +34,8 @@ export const branches: Branch[] = [
     isFlagship: true,
   },
   {
-    name: "Mile 7 T-Junction",
-    address: "Nii Okaiman West Main Rd, T-Junction, Accra, Ghana",
+    name: "Mile 7 T Junction",
+    address: "Nii Okaiman West Main Rd, T Junction, Accra, Ghana",
     mapsUrl: "http://bit.ly/3GCmFkm",
   },
   {
@@ -66,7 +66,7 @@ export const orderSteps: OrderStep[] = [
   },
   {
     title: "Pay your way",
-    description: "Cash or Mobile Money — pick your payment method. Pay when your order's ready.",
+    description: "Cash or Mobile Money, pick your payment method. Pay when your order's ready.",
   },
   {
     title: "Dig in",
@@ -90,7 +90,7 @@ export const testimonials: Testimonial[] = [
   {
     name: "Nana A.",
     quote:
-      "Ordered the Flicks & Licks Combo for a get-together and it fed everyone with leftovers. Worth every cedi.",
+      "Ordered the Flicks & Licks Combo for a gathering and it fed everyone with leftovers. Worth every cedi.",
     rating: 5,
   },
 ];
@@ -104,22 +104,22 @@ export const faqItems: FaqItem[] = [
   {
     question: "Where is Flicks & Licks located?",
     answer:
-      "We've got five spots across Accra: Haatso Atomic, Mile 7 T-Junction, Kingsby Achimota, East Legon and Dansoman. See the full list with directions in the Location & Hours section above.",
+      "We've got five spots across Accra: Haatso Atomic, Mile 7 T Junction, Kingsby Achimota, East Legon and Dansoman. See the full list with directions in the Location & Hours section above.",
   },
   {
-    question: "Can I pre-order for pickup?",
+    question: "Can I preorder for pickup?",
     answer:
       "Give us a call or WhatsApp ahead of time and we'll have your order ready when you arrive.",
   },
   {
     question: "Do you deliver?",
     answer:
-      "Right now we're pickup and dine-in only across all our locations. Delivery is on the way as we grow.",
+      "Yes! Order delivery through Bolt Food or Uber Eats, or pick up and dine in at any of our locations. You can also place an order and get a dispatch rider to come pick it up.",
   },
   {
     question: "What are your hours?",
     answer:
-      "We're open daily — check the Location & Hours section above for the full schedule.",
+      "We're open daily, check the Location & Hours section above for the full schedule.",
   },
   {
     question: "Are more Flicks & Licks locations opening?",

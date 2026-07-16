@@ -56,7 +56,7 @@ export default function OrderDetails({ value, onChange }: OrderDetailsProps) {
       <textarea
         value={value.notes}
         onChange={update("notes")}
-        placeholder="Additional info (optional) — landmark, gate code, etc."
+        placeholder="Additional info (optional): landmark, gate code, etc."
         aria-label="Additional delivery info"
         rows={2}
         className="w-full resize-none rounded-md border border-white/10 bg-charcoal/60 px-2.5 py-2 text-sm text-cream placeholder:text-cream-dim/50 focus:border-red focus:outline-none"

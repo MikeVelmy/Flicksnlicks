@@ -26,7 +26,7 @@ export async function generateMetadata({
 
   return {
     title: product.name,
-    description: `${product.description} ₵${product.price} at Flicks & Licks — order for pickup at any of our Accra locations.`,
+    description: `${product.description} ₵${product.price} at Flicks & Licks. Order for pickup at any of our Accra locations.`,
     openGraph: {
       title: `${product.name} | Flicks & Licks`,
       description: product.description,
@@ -106,7 +106,7 @@ export default async function DishPage({
                 <LikeButton slug={product.slug} />
                 <ShareButton
                   title={`${product.name} | Flicks & Licks`}
-                  text={`Check out ${product.name} at Flicks & Licks — ₵${product.price}`}
+                  text={`Check out ${product.name} at Flicks & Licks, ₵${product.price}`}
                 />
               </div>
 
@@ -118,7 +118,7 @@ export default async function DishPage({
                         {group.group}
                         {group.optional && (
                           <span className="ml-2 font-body text-xs font-normal normal-case text-cream-dim/60">
-                            optional — ask at the counter
+                            optional, ask at the counter
                           </span>
                         )}
                       </h3>
@@ -153,7 +153,7 @@ export default async function DishPage({
                 />
               </div>
               <p className="mt-3 font-body text-xs text-cream-dim/60">
-                Cash &amp; Mobile Money accepted · Pickup &amp; dine-in
+                Cash &amp; Mobile Money accepted · Pickup &amp; dine in
               </p>
             </div>
           </div>

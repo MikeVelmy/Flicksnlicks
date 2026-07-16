@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { siteInfo } from "@/data/site";
+import SocialLinks from "@/components/SocialLinks";
 
 const reasons = [
   {
@@ -10,21 +10,15 @@ const reasons = [
   {
     title: "Vibrant Atmosphere",
     description:
-      "Our restaurants are designed to be lively, fun, and welcoming — whether you're here for a quick bite or a full meal with friends, you'll feel right at home.",
+      "Our restaurants are designed to be lively, fun, and welcoming, whether you're here for a quick bite or a full meal with friends, you'll feel right at home.",
   },
   {
     title: "Convenience",
     description:
-      "With our easy-to-navigate website and app, ordering your favorite meals has never been easier. Plus, we offer delivery services, so you can enjoy Flicks & Licks from the comfort of your home.",
+      "With our easy to navigate website and app, ordering your favorite meals has never been easier. Plus, we offer delivery services, so you can enjoy Flicks & Licks from the comfort of your home.",
   },
 ];
 
-const socialLinks = [
-  { href: siteInfo.instagram, label: "Instagram" },
-  { href: siteInfo.tiktok, label: "TikTok" },
-  { href: siteInfo.facebook, label: "Facebook" },
-  { href: siteInfo.twitter, label: "Twitter" },
-];
 
 export default function About() {
   return (
@@ -62,8 +56,8 @@ export default function About() {
             <p className="mt-5 font-body text-cream-dim leading-relaxed">
               Welcome to Flicks &amp; Licks, where every bite is a
               celebration, and every visit is an experience. We&rsquo;re not
-              just another fast food restaurant; we&rsquo;re your go-to
-              destination for mouth-watering meals and a vibrant atmosphere,
+              just another fast food restaurant; we&rsquo;re your favorite
+              destination for mouth watering meals and a vibrant atmosphere,
               all served with a side of entertainment.
             </p>
             <p className="mt-4 font-body text-cream-dim leading-relaxed">
@@ -82,7 +76,7 @@ export default function About() {
               At Flicks &amp; Licks, we believe in bringing people together
               through good food and great vibes. Our journey started with a
               simple goal: to create a space where guests could enjoy the
-              best of both worlds — a fun, energetic ambiance and
+              best of both worlds, a fun, energetic ambiance and
               irresistible dishes that keep you coming back for more.
               We&rsquo;ve since become a favorite hangout for food lovers,
               movie buffs, and anyone who just wants to unwind with
@@ -119,25 +113,13 @@ export default function About() {
                 Join the Flicks Community!
               </h3>
               <p className="mt-2 font-body text-sm leading-relaxed text-cream-dim">
-                Don&rsquo;t be left out of our ever-growing community! Follow
+                Don&rsquo;t be left out of our growing community! Follow
                 us on social media for the latest updates, exclusive offers,
                 and exciting events.
               </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-full border border-white/15 px-3.5 py-1.5 font-body text-xs font-semibold text-cream-dim transition-colors hover:border-red hover:text-red-bright"
-                  >
-                    {social.label}
-                  </a>
-                ))}
-              </div>
+              <SocialLinks className="mt-4 flex flex-wrap gap-3" />
               <p className="mt-4 font-display text-sm font-bold text-red-bright">
-                Flicks &amp; Licks — where great food meets great
+                Flicks &amp; Licks, where great food meets great
                 entertainment!
               </p>
             </div>

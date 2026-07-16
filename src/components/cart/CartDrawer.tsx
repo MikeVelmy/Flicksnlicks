@@ -247,7 +247,7 @@ export default function CartDrawer() {
               We&apos;ve got your payment details!
             </h3>
             <p className="mt-1 font-body text-sm text-cream-dim">
-              We&apos;re confirming your Mobile Money payment on WhatsApp — we&apos;ll start
+              We&apos;re confirming your Mobile Money payment on WhatsApp. We&apos;ll start
               preparing your order as soon as it&apos;s confirmed.
             </p>
 
@@ -522,7 +522,7 @@ export default function CartDrawer() {
                     onClick={handleNotifyRestaurant}
                     className="mt-3 flex w-full items-center justify-center rounded-full bg-purple-600 px-6 py-3.5 font-display text-base font-bold text-cream shadow-[0_5px_0_0_var(--color-purple-700)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
                   >
-                    Payment Made — Notify Restaurant
+                    Payment Made, Notify Restaurant
                   </button>
                 ) : (
                   <a

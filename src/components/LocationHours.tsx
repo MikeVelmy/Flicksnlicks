@@ -25,7 +25,7 @@ export default function LocationHours() {
           <div className="relative min-h-[260px] overflow-hidden rounded-2xl border border-white/10 sm:min-h-[320px]">
             <Image
               src="/images/interior-ambience.webp"
-              alt="Flicks & Licks dine-in seating area in Haatso Atomic"
+              alt="Flicks & Licks dine in seating area in Haatso Atomic"
               fill
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-cover"
@@ -34,7 +34,7 @@ export default function LocationHours() {
             <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 right-4">
               <span className="marker-tag inline-block rounded-md bg-red px-3 py-1 font-display text-xs font-bold uppercase tracking-wide text-cream">
-                Dine-in available
+                Dine in available
               </span>
             </div>
           </div>
